@@ -1,35 +1,30 @@
-[tool.poetry]
+[project]
 name = "odd-dbt"
-version = "0.2.13"
-description = "OpenDataDiscovery Action for dbt"
-authors = ["Mateusz Kulas <mkulas@provectus.com>"]
+version = "0.2.0"
+description = "Add your description here"
 readme = "README.md"
-license = "Apache-2.0"
-keywords = [
-    'Open Data Discovery',
-    'dbt',
-    "Metadata",
-    "Data Discovery",
-    "Data Observability",
+authors = [{ name = "1cadumagalhaes", email = "github@cadumagalhaes.dev" }]
+requires-python = ">=3.12"
+dependencies = [
+    "dbt-bigquery>=1.9.1",
+    "funcy>=2.0",
+    "loguru>=0.7.3",
+    "odd-models>=2.0.51",
+    "oddrn-generator>=0.1.103",
+    "psycopg2-binary>=2.9.10",
+    "sqlalchemy>=2.0.41",
+    "typer>=0.15.4",
 ]
-packages = [{ include = "odd_dbt" }]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-odd-models = "^2.0.50"
-oddrn-generator = "^0.1.102"
-funcy = "^2.0"
-sqlalchemy = "^2.0.31"
-loguru = "^0.7.2"
-typer = { extras = ["all"], version = "^0.7.0" }
-psycopg2-binary = "^2.9.6"
-dbt-postgres = "^1.6.2"
-dbt-snowflake = "^1.6.2"
+[project.scripts]
+odd-dbt = "odd_dbt:main"
 
-[tool.poetry.group.dev.dependencies]
-black = "^22.12.0"
-pre-commit = "^3.1.0"
-ruff = "^0.0.278"
+[build-system]
+requires = ["uv_build>=0.7.4,<0.8"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["pre-commit>=4.2.0", "pytest>=8.3.5", "ruff>=0.11.10"]
 
 [tool.ruff]
 ignore = ["E501"]
@@ -37,10 +32,3 @@ ignore = ["E501"]
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
 "logger.py" = ["F401"]
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-odd_dbt_test = "odd_dbt.app:app"
