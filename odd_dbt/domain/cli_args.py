@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from dbt.cli.resolvers import default_project_dir, default_profiles_dir
+from dbt.cli.resolvers import default_profiles_dir, default_project_dir
 
 
 @dataclass

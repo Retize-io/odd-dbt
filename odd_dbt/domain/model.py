@@ -1,24 +1,29 @@
-from odd_models import DataEntity, DataTransformer, DataSet, DataInput, DataSetField
 import abc
+
+from odd_models import DataEntity, DataInput, DataSet, DataSetField, DataTransformer
 
 
 class NodeEntity(DataEntity, abc.ABC):
     @abc.abstractmethod
-    def add_upstream(self, upstream_node: "NodeEntity") -> None:
-        ...
+    def add_upstream(self, upstream_node: "NodeEntity") -> None: ...
 
     @abc.abstractmethod
-    def add_input(self, oddrn: str) -> None:
-        ...
+    def add_input(self, oddrn: str) -> None: ...
 
     @abc.abstractmethod
-    def add_output(self, oddrn: str) -> None:
-        ...
+    def add_output(self, oddrn: str) -> None: ...
 
 
 class ModelEntity(NodeEntity):
     def __init__(self, **data: dict):
+        # Ensure metadata is properly formatted as a list
+        if "metadata" in data and not isinstance(data["metadata"], list):
+            data["metadata"] = [data["metadata"]] if data["metadata"] else []
+
         super().__init__(**data)
+
+        # Initialize dataset to store fields
+        self.dataset = DataSet(field_list=[])
 
         self.data_transformer = DataTransformer(
             inputs=[],
@@ -58,5 +63,44 @@ class SeedEntity(NodeEntity):
         if oddrn not in self.data_input.outputs:
             self.data_input.outputs.append(oddrn)
 
-    def add_column(self, column: ColumnEntity) -> None:
-        self.dataset.field_list.append(column)
+
+class MetricEntity(NodeEntity):
+    def __init__(self, **data: dict):
+        super().__init__(**data)
+
+        self.data_transformer = DataTransformer(
+            inputs=[],
+            outputs=[],
+        )
+
+    def add_upstream(self, upstream_node: "NodeEntity") -> None:
+        self.add_input(upstream_node.oddrn)
+
+    def add_input(self, oddrn: str) -> None:
+        if oddrn not in self.data_transformer.inputs:
+            self.data_transformer.inputs.append(oddrn)
+
+    def add_output(self, oddrn: str) -> None:
+        if oddrn not in self.data_transformer.outputs:
+            self.data_transformer.outputs.append(oddrn)
+
+
+class SemanticModelEntity(NodeEntity):
+    def __init__(self, **data: dict):
+        super().__init__(**data)
+
+        self.data_transformer = DataTransformer(
+            inputs=[],
+            outputs=[],
+        )
+
+    def add_upstream(self, upstream_node: "NodeEntity") -> None:
+        self.add_input(upstream_node.oddrn)
+
+    def add_input(self, oddrn: str) -> None:
+        if oddrn not in self.data_transformer.inputs:
+            self.data_transformer.inputs.append(oddrn)
+
+    def add_output(self, oddrn: str) -> None:
+        if oddrn not in self.data_transformer.outputs:
+            self.data_transformer.outputs.append(oddrn)

@@ -1,6 +1,6 @@
-import dbt.events.functions as events_functions
 from dbt import flags
-from dbt.contracts.graph.nodes import ParsedNode, ModelNode, SeedNode
+from dbt.cli import requires as dbt_cli_requires
+from dbt.contracts.graph.nodes import ModelNode, ParsedNode, SeedNode
 
 from odd_dbt.domain.cli_args import CliArgs, FlagsArgs
 from odd_dbt.domain.context import DbtContext
@@ -14,7 +14,7 @@ def collect_flags(cli_args: CliArgs):
         profile=cli_args.profile,
     )
     flags.set_from_args(flag_args, None)
-    events_functions.set_invocation_id()
+    dbt_cli_requires.reset_invocation_id()
 
     return flags.get_flags()
 

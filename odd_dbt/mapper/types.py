@@ -27,4 +27,16 @@ DBT_TO_ODD: dict[str, Type] = {
     "ARRAY": Type.TYPE_LIST,
     "VARIANT": Type.TYPE_LIST,
     "UNKNOWN": Type.TYPE_UNKNOWN,
+    # DBT Metric types
+    "COUNT": Type.TYPE_NUMBER,
+    "COUNT_DISTINCT": Type.TYPE_NUMBER,
+    "SUM": Type.TYPE_NUMBER,
+    "AVERAGE": Type.TYPE_NUMBER,
+    "MIN": Type.TYPE_NUMBER,
+    "MAX": Type.TYPE_NUMBER,
+    "MEDIAN": Type.TYPE_NUMBER,
+    "PERCENTILE": Type.TYPE_NUMBER,
+    "DERIVED": Type.TYPE_NUMBER,
+    "RATIO": Type.TYPE_NUMBER,
+    "EXPRESSION": Type.TYPE_STRING,
 }

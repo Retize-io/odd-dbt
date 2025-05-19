@@ -3,14 +3,8 @@ from datetime import datetime
 from typing import Iterable, Optional
 
 import pytz
-from dbt.contracts.graph.nodes import GenericTestNode, TestNode, SeedNode
+from dbt.contracts.graph.nodes import GenericTestNode, SeedNode, TestNode
 from funcy import lkeep
-from odd_dbt.domain import Result
-from odd_dbt.domain.context import DbtContext
-from odd_dbt.mapper.generator import create_generator
-from odd_dbt.mapper.helpers import datetime_format
-from odd_dbt.mapper.metadata import get_metadata
-from odd_dbt.mapper.status_reason import StatusReason
 from odd_models.models import (
     DataEntity,
     DataEntityList,
@@ -22,7 +16,13 @@ from odd_models.models import (
 )
 from oddrn_generator import DbtGenerator
 
+from odd_dbt.domain import Result
+from odd_dbt.domain.context import DbtContext
 from odd_dbt.logger import logger
+from odd_dbt.mapper.generator import create_generator
+from odd_dbt.mapper.helpers import datetime_format
+from odd_dbt.mapper.metadata import get_metadata
+from odd_dbt.mapper.status_reason import StatusReason
 
 
 class DbtTestMapper:
@@ -32,20 +32,26 @@ class DbtTestMapper:
 
     def map(self) -> DataEntityList:
         data_entities = []
-        
-        test_results = [res for res in self._context.results if res.unique_id.startswith("test.")]
-        
+
+        test_results = [
+            res for res in self._context.results if res.unique_id.startswith("test.")
+        ]
+
         if not test_results:
-            raise ValueError("run_results.json doesn't contain any test result. Was dbt test command executed?")
+            raise ValueError(
+                "run_results.json doesn't contain any test result. Was dbt test command executed?"
+            )
 
         for result in test_results:
             try:
-                data_entities.extend(self.map_result(result, self._context.manifest.nodes))
+                data_entities.extend(
+                    self.map_result(result, self._context.manifest.nodes)
+                )
             except Exception as e:
                 logger.warning(f"Can't map result {result.unique_id}: {str(e)}")
                 logger.debug(traceback.format_exc())
                 continue
-        
+
         if not data_entities:
             raise ValueError("No test results were mapped. Data will not be ingested")
 
@@ -74,7 +80,9 @@ class DbtTestMapper:
 
         job = self.map_config(test_node)
 
-        oddrn = self._generator.get_oddrn_by_path("runs", f"{invocation_id}")
+        # Create run ODDRN directly from data source
+        run_id = f"{test_id.split('.')[-1]}_{invocation_id}"
+        oddrn = f"{self._generator.get_data_source_oddrn()}/test_runs/{run_id}"
         status, status_reason = parse_status(result, test_node)
 
         name = test_node.name
@@ -105,16 +113,17 @@ class DbtTestMapper:
             )
 
         name = test_node.name
-
         if len(name) > 120:
             name = test_node.alias
 
-        self._generator.set_oddrn_paths(
-            **{"databases": test_node.database, "tests": name}
-        )
+        # Create an identifier for test paths using unique_id
+        test_id = test_node.unique_id.split(".")[-1]  # Get just the unique part
+
+        # Create an ODDRN for the test using the data source and test ID
+        oddrn = f"{self._generator.get_data_source_oddrn()}/test_suites/{test_id}"
 
         return DataEntity(
-            oddrn=self._generator.get_oddrn_by_path("tests"),
+            oddrn=oddrn,
             owner=None,
             name=name,
             type=DataEntityType.JOB,
@@ -124,6 +133,8 @@ class DbtTestMapper:
                 dataset_list=dataset_list,
                 expectation=DataQualityTestExpectation(
                     type=test_node.test_metadata.name
+                    if test_node.test_metadata
+                    else "unknown"
                 ),
             ),
         )

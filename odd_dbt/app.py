@@ -6,15 +6,13 @@ from typing import Optional
 import typer
 from dbt.cli.params import default_profiles_dir, default_project_dir
 
-from odd_dbt import config
-from odd_dbt import errors
-from odd_dbt import get_version
+from odd_dbt import config, errors, get_version
+from odd_dbt.libs import dbt, odd
 from odd_dbt.logger import logger
-from odd_dbt.mapper.test_results import DbtTestMapper
 from odd_dbt.mapper.lineage import DbtLineageMapper
-from odd_dbt.libs import odd, dbt
+from odd_dbt.mapper.test_results import DbtTestMapper
 from odd_dbt.service import odd as odd_api
-from odd_dbt.service.dbt import run_tests, CliArgs
+from odd_dbt.service.dbt import CliArgs, run_tests
 
 app = typer.Typer(
     short_help="Run dbt tests and inject results to ODD platform",

@@ -3,10 +3,16 @@ name = "odd-dbt"
 version = "0.2.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [{ name = "1cadumagalhaes", email = "github@cadumagalhaes.dev" }]
+license = { file = "LICENSE" }
+authors = [
+    { name = "1cadumagalhaes", email = "github@cadumagalhaes.dev" },
+    { name = "Mateusz Kulas", email = "mkulas@provectus.com>" },
+]
 requires-python = ">=3.12"
 dependencies = [
     "dbt-bigquery>=1.9.1",
+    "dbt-postgres>=1.9.0",
+    "dbt-snowflake>=1.9.4",
     "funcy>=2.0",
     "loguru>=0.7.3",
     "odd-models>=2.0.51",
@@ -18,6 +24,7 @@ dependencies = [
 
 [project.scripts]
 odd-dbt = "odd_dbt:main"
+inspect-dbt = "odd_dbt.inspect_dbt_project:app"
 
 [build-system]
 requires = ["uv_build>=0.7.4,<0.8"]
@@ -27,8 +34,30 @@ build-backend = "uv_build"
 dev = ["pre-commit>=4.2.0", "pytest>=8.3.5", "ruff>=0.11.10"]
 
 [tool.ruff]
-ignore = ["E501"]
+# Same as Black.
+line-length = 88
+indent-width = 4
+target-version = "py312"
 
-[tool.ruff.per-file-ignores]
+# Allow imports relative to the "src" and "tests" directories.
+src = ["odd_dbt", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "logger.py" = ["F401"]
+
+
+[tool.uv.build-backend]
+module-root = "."
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "B"]
+fixable = ["ALL"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+indent-style = "space"
+
+docstring-code-line-length = "dynamic"

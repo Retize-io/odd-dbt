@@ -4,6 +4,7 @@ from pathlib import Path
 from funcy import lmap
 
 from odd_dbt.utils import load_json
+
 from .result import Result
 
 

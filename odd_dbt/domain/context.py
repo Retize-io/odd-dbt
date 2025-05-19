@@ -1,8 +1,9 @@
 from dbt.config.runtime import RuntimeConfig
 from dbt.contracts.graph.nodes import ParsedNode
 
-from odd_dbt.domain import Manifest, Credentials, RunResults, Result
+from odd_dbt.domain import Credentials, Manifest, Result, RunResults
 from odd_dbt.domain.cli_args import CliArgs
+from odd_dbt.domain.semantic_manifest import SemanticManifest
 from odd_dbt.errors import DbtInternalError
 from odd_dbt.utils import load_json
 
@@ -35,11 +36,29 @@ class DbtContext:
         return Manifest(self.target_path / "manifest.json")
 
     @property
+    def semantic_manifest(self) -> SemanticManifest:
+        return SemanticManifest(self.target_path / "semantic_manifest.json")
+
+    @property
     def run_results(self) -> RunResults:
-        return RunResults(self.target_path / "run_results.json")
+        run_results_path = self.target_path / "run_results.json"
+        if not run_results_path.exists():
+            from odd_dbt.logger import logger
+
+            logger.warning(f"Run results file not found at {run_results_path}")
+            return None
+        try:
+            return RunResults(run_results_path)
+        except Exception as e:
+            from odd_dbt.logger import logger
+
+            logger.warning(f"Error loading run results from {run_results_path}: {e}")
+            return None
 
     @property
     def results(self) -> list[Result]:
+        if self.run_results is None:
+            return []
         return self.run_results.results
 
     @property

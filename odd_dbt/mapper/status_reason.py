@@ -1,10 +1,10 @@
 import re
 from typing import Optional
 
+from dbt.artifacts.resources.v1.generic_test import TestMetadata
 from dbt.contracts.graph.nodes import (
     GenericTestNode,
     SingularTestNode,
-    TestMetadata,
     TestNode,
 )
 from funcy import partial
@@ -53,7 +53,20 @@ def parse_model_name(model_name: Optional[str]) -> Optional[str]:
 class GenericTestReason:
     def get_reason(self, test_node: GenericTestNode) -> str:
         try:
+            # Check if test_metadata attribute exists
+            if (
+                not hasattr(test_node, "test_metadata")
+                or test_node.test_metadata is None
+            ):
+                return "Test metadata not available"
+
             test_metadata = test_node.test_metadata
+
+            # Check if the name attribute exists and if we have a method for this test type
+            if not hasattr(test_metadata, "name") or not hasattr(
+                self, test_metadata.name
+            ):
+                return f"Unknown test type: {getattr(test_metadata, 'name', 'unknown')}"
 
             return getattr(self, test_metadata.name)(test_node.test_metadata)
         except Exception as e:
